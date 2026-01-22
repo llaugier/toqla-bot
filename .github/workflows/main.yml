@@ -1,0 +1,21 @@
+name: Daily Menu Bot
+on:
+  schedule:
+    - cron: '30 8 * * 1-5' # S'exécute à 9h30 (Heure Paris) du lundi au vendredi
+  workflow_dispatch: # Permet de le lancer à la main pour tester
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - name: Install dependencies
+        run: |
+          pip install playwright requests
+          playwright install chromium
+      - name: Run bot
+        env:
+          GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+        run: python menu_bot.py
