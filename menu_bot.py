@@ -4,58 +4,55 @@ from playwright.sync_api import sync_playwright
 
 def get_menu():
     with sync_playwright() as p:
-        print("Lancement du navigateur...")
         browser = p.chromium.launch(headless=True)
-        context = browser.new_context(viewport={'width': 1280, 'height': 800})
-        page = context.new_page()
+        # On simule un grand écran pour tout voir
+        page = browser.new_page(viewport={'width': 1280, 'height': 1600})
         
         url = "https://app.toqla.fr/site/67/shop/585d9cc9-390b-431a-b90b-e15fa53c64c9"
-        
-        print(f"Chargement de la page : {url}")
+        print(f"Navigation vers {url}...")
         page.goto(url, wait_until="networkidle")
         
-        # On attend un peu que les éléments dynamiques (React/Vue) s'affichent
-        print("Attente du chargement des plats...")
-        page.wait_for_timeout(8000) 
+        # On attend que le contenu dynamique apparaisse
+        page.wait_for_timeout(10000) 
+        
+        # --- DEBUG : Capture d'écran ---
+        page.screenshot(path="debug_screen.png")
+        print("Capture d'écran effectuée.")
 
-        # Tentative d'extraction : on cherche les textes qui ressemblent à des plats
-        # On cible les titres (h3, h4) et les classes souvent utilisées par Toqla
-        menu_items = []
+        # --- RECHERCHE LARGE ---
+        # On cherche tout ce qui ressemble à un titre ou un nom de produit
+        # Toqla utilise souvent des classes comme 'article-title' ou des div spécifiques
+        found_items = []
         
-        # On cherche tous les éléments qui pourraient contenir un nom de produit
-        selectors = ["h3", "h4", ".article-name", ".product-name", "span.name"]
+        # On essaie de trouver les éléments qui ont une structure de prix à côté
+        # ou qui sont dans les listes de produits
+        selectors = [
+            ".article-name", ".product-name", "h3", "h4", 
+            "div[class*='name']", "span[class*='title']"
+        ]
         
-        for selector in selectors:
-            elements = page.query_selector_all(selector)
+        for sel in selectors:
+            elements = page.query_selector_all(sel)
             for el in elements:
-                text = el.inner_text().strip()
-                if text and len(text) > 3: # On évite les textes trop courts
-                    menu_items.append(text)
-        
+                t = el.inner_text().strip()
+                if len(t) > 5 and "\n" not in t: # Filtre pour éviter les blocs de texte inutiles
+                    found_items.append(t)
+
         browser.close()
         
-        # Nettoyage des doublons et formatage
-        unique_items = list(dict.fromkeys(menu_items))
+        # Nettoyage
+        unique_items = list(dict.fromkeys(found_items))
         
         if not unique_items:
-            return "⚠️ Aucun plat n'a pu être détecté automatiquement sur la page."
+            return "⚠️ Robot connecté, mais aucun texte de plat trouvé. Vérifiez la capture d'écran dans GitHub."
             
-        return "🍴 *Menu du jour Toqla* 🍴\n\n" + "\n".join([f"- {item}" for item in unique_items])
+        return "🍴 *Menu du jour* 🍴\n\n" + "\n".join([f"- {item}" for item in unique_items[:20]])
 
 def send_to_google_chat(text):
     webhook_url = 'https://chat.googleapis.com/v1/spaces/AAAAh2O9o4g/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=VN6fIX1Jq_3A3zuEIgu7Z4_2UX6MiodpX9-4oa3MdR4'
-    if not webhook_url:
-        print("Erreur : La variable GOOGLE_CHAT_WEBHOOK est vide.")
-        return
-
-    payload = {"text": text}
-    response = requests.post(webhook_url, json=payload)
-    print(f"Statut de l'envoi : {response.status_code}")
+    if webhook_url:
+        requests.post(webhook_url, json={"text": text})
 
 if __name__ == "__main__":
-    try:
-        content = get_menu()
-        print("Menu récupéré, envoi en cours...")
-        send_to_google_chat(content)
-    except Exception as e:
-        print(f"Une erreur est survenue : {e}")
+    menu = get_menu()
+    send_to_google_chat(menu)
