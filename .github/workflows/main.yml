@@ -1,10 +1,6 @@
 - name: Run bot
         env:
           GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          TOQLA_EMAIL: ${{ secrets.TOQLA_EMAIL }}
+          TOQLA_PASSWORD: ${{ secrets.TOQLA_PASSWORD }}
         run: python menu_bot.py
-        
-      - name: Upload Debug Screenshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshot
-          path: debug_screen.png
