@@ -15,14 +15,16 @@ jobs:
         run: |
           pip install playwright requests
           playwright install chromium
-     - name: Run bot
+      - name: Run bot
         env:
           GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
           TOQLA_EMAIL: ${{ secrets.TOQLA_EMAIL }}
           TOQLA_PASSWORD: ${{ secrets.TOQLA_PASSWORD }}
         run: python menu_bot.py
-      - name: Upload Debug Screenshot
+        
+      - name: Upload Error Screenshot
+        if: failure() # Ne se lance que si le script plante
         uses: actions/upload-artifact@v4
         with:
-          name: screenshot
-          path: debug_screen.png
+          name: error-screenshot
+          path: error_login.png
