@@ -43,7 +43,7 @@ def get_menu():
         return "🍴 *Menu du jour Toqla* 🍴\n\n" + "\n".join([f"- {item}" for item in unique_items])
 
 def send_to_google_chat(text):
-    webhook_url = os.environ.get('GOOGLE_CHAT_WEBHOOK')
+    webhook_url = os.environ.get('https://chat.googleapis.com/v1/spaces/AAAAh2O9o4g/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=VN6fIX1Jq_3A3zuEIgu7Z4_2UX6MiodpX9-4oa3MdR4')
     if not webhook_url:
         print("Erreur : La variable GOOGLE_CHAT_WEBHOOK est vide.")
         return
