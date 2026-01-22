@@ -19,10 +19,6 @@ jobs:
         env:
           GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
         run: python menu_bot.py
-      - name: Run bot
-        env:
-          GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-        run: python menu_bot.py
       - name: Upload Debug Screenshot
         uses: actions/upload-artifact@v4
         with:
